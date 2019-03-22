@@ -10,8 +10,6 @@ class RcCar:
             self.connected = False
             return
         self.connected = True
-        self.pi.set_PWM_frequency(motorPin, 300)
-        self.pi.set_PWM_frequency(steeringPin, 300)
         
         #GPIO pin locations
         self.motorPin = motorPin
@@ -39,19 +37,15 @@ class RcCar:
     
     #set motor speed to the percent given
     def setSpeed(self, percent):
-        range = (self.motorMax - self.motorMin) / 2
+        range = self.motorMax - self.motorMin
         
         #turn off motor if percent is below 0
         if percent < 0:
             pulseWidth = 0
         elif percent > 100:
             percent = 100
-        elif percent > 50:
-            pulseWidth = self.motorMin + range + (range * .84 * (percent - 50) / 100) + (range * .16)
-        elif percent < 50:
-            pulseWidth = self.motorMin + range - (range * .84 * (50 - percent) / 100) - (range * .16)
         else:
-            pulseWidth = self.motorMin + range
+            pulseWidth = self.motorMin + (range * percent / 100)
         
         self.pi.set_servo_pulsewidth(self.motorPin, pulseWidth)
     
