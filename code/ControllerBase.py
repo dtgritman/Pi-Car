@@ -3,7 +3,7 @@ from evdev import InputDevice, categorize, ecodes
 
 #creates object 'gamepad' to store the data
 #you can call it whatever you like
-gamepad = InputDevice('/dev/input/event3')
+gamepad = InputDevice('/dev/input/event2')
 
 #button code variables (change to suit your device)
 xBtn = 304

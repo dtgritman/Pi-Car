@@ -10,7 +10,7 @@ import os
 
 #control rc car with ps4 controller
 def ps4RcCar(car):
-    controllerFile = "/dev/input/event3"
+    controllerFile = "/dev/input/event2"
     
     while not os.path.exists(controllerFile):
         print("{} - Controller Not Found!".format(time.strftime("%H:%M:%S")))
