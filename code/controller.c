@@ -50,6 +50,14 @@ struct input_event {
     unsigned int value;
 };
 
+struct controller_status {
+    bool opt;
+    bool r1;
+    unsigned short l2_pos;
+    unsigned short r2_pos;
+    unsigned short js_x;
+};
+
 
 
 int main() {
@@ -75,6 +83,8 @@ int main() {
         printf("Error opening file\n");
         return -1;
     }
+    
+    struct controller_status statController = {0,0,0,0,0,0};
     
     bool paused = false;
     while (!paused) {
