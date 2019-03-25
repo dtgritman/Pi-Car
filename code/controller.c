@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
+#include <errno.h>
 
 #include <pigpiod_if2.h>
 
@@ -127,7 +128,8 @@ void stopCar(int pi) {
 int main() {
     struct sigaction sig;
     sig.sa_handler = intHandler;
-    sigaction(SIGINT, &sig, NULL);
+    sig.sa_flags = 0;
+    sigaction(SIGINT, &sig, 0);
     
     struct input_event event;
     int pi, fd, speedPerc, steeringPerc;
@@ -148,7 +150,11 @@ int main() {
             }
             continue;
         }
-        if (read(fd, &event, sizeof(struct input_event)) != sizeof(struct input_event)) {
+        if (read(fd, &event, sizeof(struct input_event)) < 0) {
+            //If the read is blocked by sigaction then continue so code execution is stopped
+            if (errno == EINTR)
+                continue;
+            
             stopCar(pi);
             printf("Controller Disconnected!\n");
             close(fd);
