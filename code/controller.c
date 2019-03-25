@@ -149,6 +149,7 @@ int main() {
             continue;
         }
         if (read(fd, &event, sizeof(struct input_event)) != sizeof(struct input_event)) {
+            stopCar(pi);
             printf("Controller Disconnected!\n");
             close(fd);
             fd = open("/dev/input/event2", O_RDONLY);
