@@ -20,6 +20,10 @@
 #define SERVO_STEERING_MIN 820
 #define SERVO_STEERING_MAX 1480
 
+//Gun Relay
+#define RELAY_GUN 26
+#define GUN_ACTIVE_STATE 0
+
 //Controller Code Types
 #define EV_KEY 1
 #define EV_ABS 3
@@ -105,9 +109,19 @@ void setSteering(int pi, short steeringPerc) {
     set_servo_pulsewidth(pi, SERVO_STEERING, pulseWidth);
 }
 
+//Activate or de-activate gun
+void setGun(int pi, bool status) {
+    if (status)
+        gpio_write(pi, RELAY_GUN, GUN_ACTIVE_STATE);
+    else
+        gpio_write(pi, RELAY_GUN, !GUN_ACTIVE_STATE);
+}
+
+//Set everything to off
 void stopCar(int pi) {
     setSpeed(pi, -1);
     setSteering(pi, -1);
+    setGun(pi, 0);
 }
 
 int main() {
@@ -118,7 +132,7 @@ int main() {
     struct input_event event;
     int pi, fd, speedPerc, steeringPerc;
     clock_t startTime;
-    struct controller_status controllerStat = {0,0,0,0,0};
+    struct controller_status controllerStat = {0,0,0,0,127};
     
     pi = pigpio_start(NULL, NULL);
     fd = open("/dev/input/event2", O_RDONLY);
@@ -181,6 +195,8 @@ int main() {
         if (controllerStat.l2_pos > 0)
             speedPerc -= (controllerStat.l2_pos / 255.0) * 50;
         setSpeed(pi, speedPerc);
+        
+        setGun(pi, controllerStat.r1);
         
         if (event.code == EV_KEY_OPT || event.code == EV_KEY_R1 || event.code == EV_ABS_L2 || event.code == EV_ABS_R2 || event.code == EV_ABS_RJS_X)
             printf("shoot: %u | setSpeed: %u | setSteering: %u\n", controllerStat.r1, speedPerc, steeringPerc);
