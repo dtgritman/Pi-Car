@@ -52,7 +52,7 @@ def ps4RcCar(car):
             
             elif event.type == ecodes.EV_ABS:
                 #Range is 0 to 255, Center values are about 127 (up/left: below 127, down/right: above 127)
-                if event.code == JS.left_x:
+                if event.code == JS.right_x:
                     curLJs["x"] = event.value
                 elif event.code == JS.left_y:
                     curLJs["y"] = event.value
