@@ -10,14 +10,15 @@
 
 #include <pigpiod_if2.h>
 
+
 //Motor ESC Values
-#define MOTOR_ESC 12
+#define GPIO_MOTOR_ESC 12
 #define MOTOR_ESC_MIN 1000
 #define MOTOR_ESC_MAX 2000
 #define MOTOR_DEADZONE 12
 
 //Steering Servo Values
-#define SERVO_STEERING 13
+#define GPIO_SERVO_STEERING 13
 #define SERVO_STEERING_MIN 820
 #define SERVO_STEERING_MAX 1480
 
@@ -95,7 +96,7 @@ void setSpeed(int pi, short motorPerc) {
     else if (motorPerc < 50)
         pulseWidth -= motorDeadZone + (motorRange - motorDeadZone) * (50 - motorPerc) / 50.0;
     
-    set_servo_pulsewidth(pi, MOTOR_ESC, pulseWidth);
+    set_servo_pulsewidth(pi, GPIO_MOTOR_ESC, pulseWidth);
 }
 
 //Set steering angle
@@ -107,7 +108,7 @@ void setSteering(int pi, short steeringPerc) {
     if (steeringPerc >= 0)
         pulseWidth = SERVO_STEERING_MIN + ((SERVO_STEERING_MAX - SERVO_STEERING_MIN) * steeringPerc / 100);
     
-    set_servo_pulsewidth(pi, SERVO_STEERING, pulseWidth);
+    set_servo_pulsewidth(pi, GPIO_SERVO_STEERING, pulseWidth);
 }
 
 //Activate or de-activate gun
@@ -136,29 +137,42 @@ int main() {
     clock_t startTime;
     struct controller_status controllerStat = {0,0,0,0,127};
     
+    //Setup connection to pigpio daemon
     pi = pigpio_start(NULL, NULL);
-    fd = open("/dev/input/event2", O_RDONLY);
+    if (pi < 0) {
+        printf("Error Connecting to pigpio!\n");
+        return -1;
+    }
+    
+    //Adjust servo frequency to approx. 300 hz
+    set_PWM_frequency(pi, GPIO_MOTOR_ESC, 300);
+    set_PWM_frequency(pi, GPIO_SERVO_STEERING, 300);
+    
+    //Set controller event file
+    char controllerEventFile[] = "/dev/input/event2";
+    fd = open(controllerEventFile, O_RDONLY);
     
     bool paused = false;
     while (keepRunning) {
         if (fd == -1) {
             printf("Controller Not Found!\n");
             startTime = time(NULL);
+            //check if controller is connected every second for 20 seconds
             while (keepRunning && fd == -1 && time(NULL) - startTime < 20) {
-                fd = open("/dev/input/event2", O_RDONLY);
+                fd = open(controllerEventFile, O_RDONLY);
                 sleep(1);
             }
             continue;
         }
         if (read(fd, &event, sizeof(struct input_event)) < 0) {
-            //If the read is blocked by sigaction then continue so code execution is stopped
+            //If the read is blocked by sigaction then break so code execution is stopped
             if (errno == EINTR)
-                continue;
+                break;
             
             stopCar(pi);
             printf("Controller Disconnected!\n");
             close(fd);
-            fd = open("/dev/input/event2", O_RDONLY);
+            fd = open(controllerEventFile, O_RDONLY);
             continue;
         }
         
@@ -192,7 +206,7 @@ int main() {
             continue;
         
         steeringPerc = 50;
-        if (controllerStat.js_x < 121 || controllerStat.js_x > 131)
+        if (controllerStat.js_x < 119 || controllerStat.js_x > 133)
             steeringPerc = (controllerStat.js_x / 255.0) * 100;
         setSteering(pi, steeringPerc);
         
