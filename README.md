@@ -3,7 +3,8 @@ Raspberry Pi controlled rc car
 
 ### Setup:
 ###### Dependencies:
- pigpio - `sudo apt-get install pigpio python-pigpio python3-pigpio gcc` (run on startup use `sudo systemctl enable pigpiod` otherwise use `sudo pigpiod` before use)
+ pigpio - `sudo apt-get install pigpio python-pigpio python3-pigpio gcc` (run on startup use `sudo systemctl enable pigpiod` otherwise use `sudo pigpiod` before use)  
+ evdev - `pip install evdev`
 
 ###### Add User to these groups to run without sudo:
  add user to the input group with `sudo usermod -a -G input <username>` to read evdev
