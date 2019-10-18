@@ -21,7 +21,7 @@ Raspberry Pi controlled rc car
  then use `trust <XX:XX:XX:XX:XX:XX>
 
 #### C Specific Setup:
- Compile using `gcc -Wall -pthread -o controller controller.c -lpigpiod_if2 -lrt`
+ Compile using `gcc -Wall -pthread -o controller controller.c -lpigpiod_if2 -lrt -lm`
 
 #### Python Specific Setup:
 ###### Dependencies:
